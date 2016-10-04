@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "eecs301_grp_B")
+set(eecs301_grp_B_MAINTAINER "rosuser <rosuser@todo.todo>")
+set(eecs301_grp_B_DEPRECATED "")
+set(eecs301_grp_B_VERSION "0.0.0")
+set(eecs301_grp_B_BUILD_DEPENDS "fw_wrapper" "roscpp" "rospy" "std_msgs")
+set(eecs301_grp_B_RUN_DEPENDS "fw_wrapper" "roscpp" "rospy" "std_msgs")
+set(eecs301_grp_B_BUILDTOOL_DEPENDS "catkin")
