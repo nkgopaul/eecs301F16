@@ -289,10 +289,8 @@ def walkAlongWallRight(count):
         return walk(count)
     elif getSensorValue(3) >= 190:
         leftTurn(100)
-        return count
     else:
         rightTurn(100)
-        return count
 # swim
 
 def swim(DMSThreshold):
