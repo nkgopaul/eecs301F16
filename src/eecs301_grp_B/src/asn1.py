@@ -150,7 +150,7 @@ def walkOneToTwo():
 def walkPositionTwo():
     setMotorTargetPositionCommand(1, 205)
     setMotorTargetPositionCommand(2, 512)
-    setMotorTargetPositionCommand(3, 819)
+    setMotorTargetPositionCommand(3, 799)   #819 Modified to walk straight
     setMotorTargetPositionCommand(4, 512)
     setMotorTargetPositionCommand(5, 205)
     setMotorTargetPositionCommand(6, 819)
@@ -289,6 +289,14 @@ def turnRight180Degrees():
     for i in range(0, 9):
         rightTurn(200)
 
+# walk along wall right
+def walkAlongWallRight():
+    if getSensorValue(3) > 100 and getSensorValue(3) < 190:
+        walk()
+    elif getSensorValue(3) >= 190:
+        leftTurn(100)
+    else:
+        rightTurn(100)
 # swim
 
 def swim(DMSThreshold):
@@ -356,17 +364,17 @@ if __name__ == "__main__":
 
     # control loop running at 10hz
     r = rospy.Rate(10) # 10hz
-    #setAllMotorWheelSpeeds(400)
+    setAllMotorWheelSpeeds(200)
     #defaultPosition()
     count = 0
     while not rospy.is_shutdown():
         # call function to get sensor value
-        port = 2
-        IRPort = 2
         DMSPort = 1
+        IRPortLeft = 2
+        IRPortRight = 3
         
-        # sensor_reading = getSensorValue(DMSPort)
-        # rospy.loginfo("Sensor value at port %d: %f", 2, sensor_reading)
+        sensor_reading = getSensorValue(3)
+        rospy.loginfo("Sensor value at port %d: %f", 3, sensor_reading)
 
         # call function to set motor position
         # motor_id = 8
@@ -374,15 +382,7 @@ if __name__ == "__main__":
         
         # response = setMotorTargetPositionCommand(motor_id, target_val)
         
-        # walk()
-
-       
-        #if val == True:
-        #    walkPositionTwo()
-        #    val = False
-        #else:
-        #    walkPositionOne()
-        #    val = True
+        #walk()
 
         # sleep to enforce loop rate
         r.sleep()
