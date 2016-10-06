@@ -86,7 +86,7 @@ def setMotorTargetPositionCommand(motor_id, target_val):
     rospy.wait_for_service('allcmd')
     try:
         send_command = rospy.ServiceProxy('allcmd', allcmd)
-	resp1 = send_command('SetMotorTargetPosition', motor_id, target_val, 0, [0], [0])
+        resp1 = send_command('SetMotorTargetPosition', motor_id, target_val, 0, [0], [0])
         return resp1.val
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -96,7 +96,7 @@ def getMotorPositionCommand(motor_id):
     rospy.wait_for_service('allcmd')
     try:
         send_command = rospy.ServiceProxy('allcmd', allcmd)
-	resp1 = send_command('GetMotorCurrentPosition', motor_id, 0, 0, [0], [0])
+        resp1 = send_command('GetMotorCurrentPosition', motor_id, 0, 0, [0], [0])
         return resp1.val
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -106,24 +106,24 @@ def getIsMotorMovingCommand(motor_id):
     rospy.wait_for_service('allcmd')
     try:
         send_command = rospy.ServiceProxy('allcmd', allcmd)
-	resp1 = send_command('GetIsMotorMoving', motor_id, 0, 0, [0], [0])
+        resp1 = send_command('GetIsMotorMoving', motor_id, 0, 0, [0], [0])
         return resp1.val
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
 # setAllMotorWheelSpeeds
 
-def setAllMotorWheelSpeeds(speed):
-    setMotorWheelSpeed(1, speed)
-    setMotorWheelSpeed(2, speed)
-    setMotorWheelSpeed(3, speed)
-    setMotorWheelSpeed(4, speed)
-    setMotorWheelSpeed(5, speed)
-    setMotorWheelSpeed(6, speed)
-    setMotorWheelSpeed(7, speed)
-    setMotorWheelSpeed(8, speed)
+def setAllMotorTargetSpeeds(speed):
+    setMotorTargetSpeed(1, speed)
+    setMotorTargetSpeed(2, speed)
+    setMotorTargetSpeed(3, speed)
+    setMotorTargetSpeed(4, speed)
+    setMotorTargetSpeed(5, speed)
+    setMotorTargetSpeed(6, speed)
+    setMotorTargetSpeed(7, speed)
+    setMotorTargetSpeed(8, speed)
 
-# walkPositionOne
+# walk forward
 
 def walkPositionOne():
     setMotorTargetPositionCommand(1, 512)
@@ -140,7 +140,7 @@ def walkOneToTwo():
     setMotorTargetPositionCommand(2, 656)
     setMotorTargetPositionCommand(3, 656)
     setMotorTargetPositionCommand(4, 358)
-    
+
     setMotorTargetPositionCommand(5, 300)
     setMotorTargetPositionCommand(6, 819)
     setMotorTargetPositionCommand(7, 819)
@@ -187,6 +187,114 @@ def walk(count):
         walkTwoToOne()
         count += 1
         return count
+def walkForward():
+    walkPositionOne()
+    walkOneToTwo()
+    walkPositionTwo()
+    walkTwoToOne()
+        
+# walk left
+
+def walkLeftPositionOne():
+    setMotorTargetPositionCommand(2, 512)
+    setMotorTargetPositionCommand(4, 205)
+    setMotorTargetPositionCommand(1, 512)
+    setMotorTargetPositionCommand(3, 819)
+    setMotorTargetPositionCommand(6, 819)
+    setMotorTargetPositionCommand(8, 205)
+    setMotorTargetPositionCommand(5, 205)
+    setMotorTargetPositionCommand(7, 819)
+    
+def walkLeftOneToTwo():
+    setMotorTargetPositionCommand(2, 656)
+    setMotorTargetPositionCommand(4, 358)
+    setMotorTargetPositionCommand(1, 358)
+    setMotorTargetPositionCommand(3, 656)
+
+    setMotorTargetPositionCommand(6, 724)
+    setMotorTargetPositionCommand(8, 205)
+    setMotorTargetPositionCommand(5, 205)
+    setMotorTargetPositionCommand(7, 724)   
+
+     
+def walkLeftPositionTwo():
+    setMotorTargetPositionCommand(2, 779)
+    setMotorTargetPositionCommand(4, 512)
+    setMotorTargetPositionCommand(1, 205)   #819 Modified to walk straight
+    setMotorTargetPositionCommand(3, 512)
+    setMotorTargetPositionCommand(6, 819)
+    setMotorTargetPositionCommand(8, 205)
+    setMotorTargetPositionCommand(5, 205)
+    setMotorTargetPositionCommand(7, 819)
+    
+def walkLeftTwoToOne():
+    setMotorTargetPositionCommand(2, 656)
+    setMotorTargetPositionCommand(4, 358)
+    setMotorTargetPositionCommand(1, 358)
+    setMotorTargetPositionCommand(3, 656)
+    
+    setMotorTargetPositionCommand(6, 819)
+    setMotorTargetPositionCommand(8, 300)
+    setMotorTargetPositionCommand(5, 300)
+    setMotorTargetPositionCommand(7, 819)
+
+def walkLeft():
+    walkLeftPositionOne()
+    walkLeftOneToTwo()
+    walkLeftPositionTwo()
+    walkLeftTwoToOne()
+
+# walk right
+
+def walkRightPositionOne():
+    setMotorTargetPositionCommand(3, 512)
+    setMotorTargetPositionCommand(1, 205)
+    setMotorTargetPositionCommand(4, 512)
+    setMotorTargetPositionCommand(2, 819)
+    setMotorTargetPositionCommand(6, 819)
+    setMotorTargetPositionCommand(8, 205)
+    setMotorTargetPositionCommand(5, 205)
+    setMotorTargetPositionCommand(7, 819)
+    
+def walkRightOneToTwo():
+    setMotorTargetPositionCommand(3, 656)
+    setMotorTargetPositionCommand(1, 358)
+    setMotorTargetPositionCommand(4, 358)
+    setMotorTargetPositionCommand(2, 656)
+
+    setMotorTargetPositionCommand(6, 724)
+    setMotorTargetPositionCommand(8, 205)
+    setMotorTargetPositionCommand(5, 205)
+    setMotorTargetPositionCommand(7, 724)   
+
+     
+def walkRightPositionTwo():
+    setMotorTargetPositionCommand(3, 819)
+    setMotorTargetPositionCommand(1, 462)
+    setMotorTargetPositionCommand(4, 205)   #819 Modified to walk straight
+    setMotorTargetPositionCommand(2, 512)
+    setMotorTargetPositionCommand(6, 819)
+    setMotorTargetPositionCommand(8, 205)
+    setMotorTargetPositionCommand(5, 205)
+    setMotorTargetPositionCommand(7, 819)
+    
+def walkRightTwoToOne():
+    setMotorTargetPositionCommand(3, 656)
+    setMotorTargetPositionCommand(1, 358)
+    setMotorTargetPositionCommand(4, 358)
+    setMotorTargetPositionCommand(2, 656)
+    
+    setMotorTargetPositionCommand(6, 819)
+    setMotorTargetPositionCommand(8, 300)
+    setMotorTargetPositionCommand(5, 300)
+    setMotorTargetPositionCommand(7, 819)
+
+def walkRight():
+    walkRightPositionOne()
+    walkRightOneToTwo()
+    walkRightPositionTwo()
+    walkRightTwoToOne()
+
 # right turn
 
 def rightTurn(turnIncrement):
@@ -285,9 +393,9 @@ def turnRight180Degrees():
 
 # walk along wall right
 def walkAlongWallRight(count):
-    if getSensorValue(3) > 100 and getSensorValue(3) < 190:
+    if getSensorValue(3) > 80 and getSensorValue(3) < 220:
         return walk(count)
-    elif getSensorValue(3) >= 190:
+    elif getSensorValue(3) >= 190: #150 center value
         leftTurn(100)
         return count
     else:
@@ -360,23 +468,71 @@ if __name__ == "__main__":
 
     # control loop running at 10hz
     r = rospy.Rate(10) # 10hz
-    setAllMotorWheelSpeeds(200)
-    #defaultPosition()
-    walk_count = 1
+    setAllMotorTargetSpeeds(300)
+    defaultPosition()
+    walkForwardCount = 0
+    walkLeftCount = 0
+    walkRightCount = 0
+    DMSPort = 1
+    IRPortLeft = 2
+    IRPortRight = 3
+    previousReading = 0
+    currentReading = 0
     while not rospy.is_shutdown():
         # call function to get sensor value
-        DMSPort = 1
-        IRPortLeft = 2
-        IRPortRight = 3
         
-        sensor_reading = getSensorValue(3)
-        rospy.loginfo("Sensor value at port %d: %f", 3, sensor_reading)
+        sensor_reading = getSensorValue(IRPortLeft)
+        #rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
         #temp = walk(walk_count)
         #walk_count = temp
         
-        temp = walkAlongWallRight(walk_count)
-        walk_count = temp
-        
+        #temp = walkAlongWallRight(walk_count)
+        if getSensorValue(IRPortLeft) > 100 and getSensorValue(IRPortLeft) < 180:
+            previousReading = getSensorValue(IRPortLeft)
+            if walkForwardCount == 0:
+                walkPositionOne()
+                walkForwardCount = 1
+            elif walkForwardCount == 1:
+                walkOneToTwo()
+                walkForwardCount = 2
+            elif walkForwardCount == 2:
+                walkPositionTwo()
+                walkForwardCount = 3
+            elif walkForwardCount == 3:
+                walkTwoToOne()
+                walkForwardCount = 0
+            currentReading = getSensorValue(IRPortLeft)
+            rospy.loginfo(previousReading - currentReading)
+            if currentReading - previousReading > 100:
+                rightTurn(200)
+            elif  previousReading - currentReading > 40:
+                leftTurn(200)
+        elif getSensorValue(IRPortLeft) >= 180:
+            if walkRightCount == 0:
+                walkRightPositionOne()
+                walkRightCount = 1
+            elif walkRightCount == 1:
+                walkRightOneToTwo()
+                walkRightCount = 2
+            elif walkRightCount == 2:
+                walkRightPositionTwo()
+                walkRightCount = 3
+            elif walkRightCount == 3:
+                walkRightTwoToOne()
+                walkRightCount = 0
+        elif getSensorValue(IRPortLeft) <= 100:
+            if walkLeftCount == 0:
+                walkLeftPositionOne()
+                walkLeftCount = 1
+            elif walkLeftCount == 1:
+                walkLeftOneToTwo()
+                walkLeftCount = 2
+            elif walkLeftCount == 2:
+                walkLeftPositionTwo()
+                walkLeftCount = 3
+            elif walkLeftCount == 3:
+                walkLeftTwoToOne()
+                walkLeftCount = 0
         # call function to set motor position
         # motor_id = 8
         # target_val = 200
