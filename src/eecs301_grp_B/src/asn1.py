@@ -298,14 +298,16 @@ def walkRight():
 # right turn
 
 def rightTurn(turnIncrement):
-
+    turnDegree = turnIncrement
+    if turnIncrement > 230:
+        turnDegree = 230
     defaultPosition()
         
     waitUntil = rospy.Time.now() + rospy.Duration(0.1);
     while waitUntil > rospy.Time.now():
         1
         
-    setMotorTargetPositionCommand(1, 358 - turnIncrement)
+    setMotorTargetPositionCommand(1, 358 - turnDegree)
     setMotorTargetPositionCommand(5, 300)
 
     waitUntilTwo = rospy.Time.now() + rospy.Duration(0.1)
@@ -314,21 +316,21 @@ def rightTurn(turnIncrement):
     
     setMotorTargetPositionCommand(5, 205)
     
-    setMotorTargetPositionCommand(2, 656 - turnIncrement)
+    setMotorTargetPositionCommand(2, 656 - turnDegree)
     setMotorTargetPositionCommand(6, 724)
     waitUntilThree = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilThree > rospy.Time.now():
         1
     setMotorTargetPositionCommand(6, 819)  
         
-    setMotorTargetPositionCommand(4, 358 - turnIncrement)
+    setMotorTargetPositionCommand(4, 358 - turnDegree)
     setMotorTargetPositionCommand(8, 300)
     waitUntilFour = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilFour > rospy.Time.now():
         1
     setMotorTargetPositionCommand(8, 205)    
     
-    setMotorTargetPositionCommand(3, 656 - turnIncrement)
+    setMotorTargetPositionCommand(3, 656 - turnDegree)
     setMotorTargetPositionCommand(7, 724)
     waitUntilFour = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilFour > rospy.Time.now():
@@ -338,10 +340,13 @@ def rightTurn(turnIncrement):
 # left turn
 
 def leftTurn(turnIncrement):
-
+    turnDegree = turnIncrement
+    if turnIncrement > 230:
+        turnDegree = 230
+    
     defaultPosition()
     
-    setMotorTargetPositionCommand(2, 656 + turnIncrement)
+    setMotorTargetPositionCommand(2, 656 + turnDegree)
     setMotorTargetPositionCommand(6, 724)
     waitUntilThree = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilThree > rospy.Time.now():
@@ -352,21 +357,21 @@ def leftTurn(turnIncrement):
     while waitUntil > rospy.Time.now():
         1
         
-    setMotorTargetPositionCommand(1, 358 + turnIncrement)
+    setMotorTargetPositionCommand(1, 358 + turnDegree)
     setMotorTargetPositionCommand(5, 300)
     waitUntilTwo = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilTwo > rospy.Time.now():
         1
     setMotorTargetPositionCommand(5, 205)
     
-    setMotorTargetPositionCommand(3, 656 + turnIncrement)
+    setMotorTargetPositionCommand(3, 656 + turnDegree)
     setMotorTargetPositionCommand(7, 724)
     waitUntilFour = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilFour > rospy.Time.now():
         1
     setMotorTargetPositionCommand(7, 819)
     
-    setMotorTargetPositionCommand(4, 358 + turnIncrement)
+    setMotorTargetPositionCommand(4, 358 + turnDegree)
     setMotorTargetPositionCommand(8, 300)
     waitUntilFour = rospy.Time.now() + rospy.Duration(0.1)
     while waitUntilFour > rospy.Time.now():
@@ -383,13 +388,13 @@ def turnRight90Degrees():
 
 def turnLeft90Degrees():
     for i in range(0, 5):
-        leftTurn(207)
+        leftTurn(190)
 
 # turn right 180 degrees
 
 def turnRight180Degrees():
-    for i in range(0, 9):
-        rightTurn(200)
+    for i in range(0, 8):
+        rightTurn(180)
 
 # walk along wall right
 def walkAlongWallRight(count):
@@ -461,6 +466,8 @@ def balancePositionTwo():
         return True
     return False
 
+#walkAlongLeftWall
+
 # Main function
 if __name__ == "__main__":
     rospy.init_node('example_node', anonymous=True)
@@ -478,61 +485,102 @@ if __name__ == "__main__":
     IRPortRight = 3
     previousReading = 0
     currentReading = 0
+    rightTurnConstant = 0.8
+    leftTurnConstant = 0.8
+    letWalk = False
+    
     while not rospy.is_shutdown():
         # call function to get sensor value
         
         sensor_reading = getSensorValue(IRPortLeft)
-        #rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
+        rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
         #temp = walk(walk_count)
         #walk_count = temp
+       
+        
+       # turnRight90Degrees()
+        
+       # while True:
+       #     defaultPosition()
         
         #temp = walkAlongWallRight(walk_count)
-        if getSensorValue(IRPortLeft) > 100 and getSensorValue(IRPortLeft) < 180:
-            previousReading = getSensorValue(IRPortLeft)
-            if walkForwardCount == 0:
-                walkPositionOne()
+        
+        #walk along right
+       
+        
+        
+        if (getSensorValue(IRPortRight) > 0) and (getSensorValue(DMSPort) < 1250) and (getSensorValue(IRPortLeft) <= 0):
+            if (getSensorValue(IRPortRight) > 150 and getSensorValue(IRPortRight) < 300) or letWalk==True:
+                if walkForwardCount == 0:
+                    walkPositionOne()
+                    walkForwardCount = 1
+                elif walkForwardCount == 1:
+                    walkOneToTwo()
+                    walkForwardCount = 2
+                elif walkForwardCount == 2:
+                    walkPositionTwo()
+                    walkForwardCount = 3
+                elif walkForwardCount == 3:
+                    walkTwoToOne()
+                    walkForwardCount = 0
+                    letWalk = False;
+                # rospy.loginfo(previousReading - currentReading)
+            elif getSensorValue(IRPortRight) >= 300:
+                turnValue = (rightTurnConstant*(getSensorValue(IRPortRight) -180))
+                rospy.loginfo(turnValue)
+                leftTurn(turnValue)
+                defaultPosition()
                 walkForwardCount = 1
-            elif walkForwardCount == 1:
-                walkOneToTwo()
-                walkForwardCount = 2
-            elif walkForwardCount == 2:
-                walkPositionTwo()
-                walkForwardCount = 3
-            elif walkForwardCount == 3:
-                walkTwoToOne()
-                walkForwardCount = 0
-            currentReading = getSensorValue(IRPortLeft)
-            rospy.loginfo(previousReading - currentReading)
-            if currentReading - previousReading > 100:
-                rightTurn(200)
-            elif  previousReading - currentReading > 40:
-                leftTurn(200)
-        elif getSensorValue(IRPortLeft) >= 180:
-            if walkRightCount == 0:
-                walkRightPositionOne()
-                walkRightCount = 1
-            elif walkRightCount == 1:
-                walkRightOneToTwo()
-                walkRightCount = 2
-            elif walkRightCount == 2:
-                walkRightPositionTwo()
-                walkRightCount = 3
-            elif walkRightCount == 3:
-                walkRightTwoToOne()
-                walkRightCount = 0
-        elif getSensorValue(IRPortLeft) <= 100:
-            if walkLeftCount == 0:
-                walkLeftPositionOne()
-                walkLeftCount = 1
-            elif walkLeftCount == 1:
-                walkLeftOneToTwo()
-                walkLeftCount = 2
-            elif walkLeftCount == 2:
-                walkLeftPositionTwo()
-                walkLeftCount = 3
-            elif walkLeftCount == 3:
-                walkLeftTwoToOne()
-                walkLeftCount = 0
+                letWalk = True
+            elif getSensorValue(IRPortRight) <= 150:
+                turnValue = leftTurnConstant*(240 - getSensorValue(IRPortRight)) 
+                rospy.loginfo(turnValue)
+                rightTurn(turnValue)
+                defaultPosition()
+                walkForwardCount = 1
+                letWalk = True;
+            
+        elif (getSensorValue(IRPortLeft) > 0) and (getSensorValue(DMSPort) < 1250) and (getSensorValue(IRPortRight) <= 0):
+            #walk Along Left
+            if (getSensorValue(IRPortLeft) > 150 and getSensorValue(IRPortLeft) < 300) or letWalk==True:
+                if walkForwardCount == 0:
+                    walkPositionOne()
+                    walkForwardCount = 1
+                elif walkForwardCount == 1:
+                    walkOneToTwo()
+                    walkForwardCount = 2
+                elif walkForwardCount == 2:
+                    walkPositionTwo()
+                    walkForwardCount = 3
+                elif walkForwardCount == 3:
+                    walkTwoToOne()
+                    walkForwardCount = 0
+                    letWalk = False;
+                # rospy.loginfo(previousReading - currentReading)
+            elif getSensorValue(IRPortLeft) >= 300:
+                turnValue = (rightTurnConstant*(getSensorValue(IRPortLeft) -180))
+                rospy.loginfo(turnValue)
+                rightTurn(turnValue);
+                defaultPosition();
+                walkForwardCount = 1
+                letWalk = True;
+            elif getSensorValue(IRPortLeft) <= 150:
+                turnValue = leftTurnConstant*(240 - getSensorValue(IRPortLeft)) 
+                rospy.loginfo(turnValue)
+                leftTurn(turnValue);
+                defaultPosition();
+                walkForwardCount = 1
+                letWalk = True
+                
+        elif (getSensorValue(IRPortRight) > 0) and (getSensorValue(DMSPort) > 1250) and (getSensorValue(IRPortLeft) > 0):
+            turnRight180Degrees()
+        elif (getSensorValue(IRPortRight) > 0) and (getSensorValue(DMSPort) > 1250) and (getSensorValue(IRPortLeft) <= 0):
+            turnLeft90Degrees()
+        elif (getSensorValue(IRPortRight) <= 0) and (getSensorValue(DMSPort) > 1250) and (getSensorValue(IRPortLeft) > 0):
+            turnRight90Degrees()
+        else:
+            walkForward()
+           
         # call function to set motor position
         # motor_id = 8
         # target_val = 200
