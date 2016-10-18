@@ -491,23 +491,13 @@ if __name__ == "__main__":
     
     while not rospy.is_shutdown():
         # call function to get sensor value
-        
+        #defaultPosition()
         sensor_reading = getSensorValue(IRPortLeft)
         rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
         #temp = walk(walk_count)
         #walk_count = temp
        
-        
-       # turnRight90Degrees()
-        
-       # while True:
-       #     defaultPosition()
-        
-        #temp = walkAlongWallRight(walk_count)
-        
-        #walk along right
        
-        
         
         if (getSensorValue(IRPortRight) > 0) and (getSensorValue(DMSPort) < 1250) and (getSensorValue(IRPortLeft) <= 0):
             if (getSensorValue(IRPortRight) > 150 and getSensorValue(IRPortRight) < 300) or letWalk==True:
