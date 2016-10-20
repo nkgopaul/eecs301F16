@@ -4,10 +4,10 @@ import sys
 # Usage:
 #
 # #Create object
-your_map = EECSMap()
+# your_map = EECSMap()
 #
 # #Use Object (examples)
-your_map.printObstacleMap()
+# your_map.printObstacleMap()
 # your_map.clearObstacleMap()
 # your_map.printCostMap()
 # your_map.setObstacle(3, 4, 1, DIRECTION.North)
@@ -350,7 +350,7 @@ class EECSMap():
     def clearCostMap(self):
         for i in xrange(8):
             for j in xrange(8):
-                self.costMap[i][j] = 0
+                self.costMap[i][j] = -1
 
     # ******************************************************************************
     # Function Name  : clearObstacleMap

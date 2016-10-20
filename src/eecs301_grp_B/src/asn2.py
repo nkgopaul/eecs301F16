@@ -3,6 +3,7 @@ import roslib
 import rospy
 from fw_wrapper.srv import *
 from map import *
+from math import floor
 
 # -----------SERVICE DEFINITION-----------
 # allcmd REQUEST DATA
@@ -311,6 +312,29 @@ def defaultPosition():
     setMotorTargetPositionCommand(7, 819)
     setMotorTargetPositionCommand(8, 205)
 
+# walk 1 tile forward
+def walkForwardSquare(squares):
+
+    if squares==1:
+        cycles = 2*squares
+        for i in range(0,int(floor(cycles))):
+            walkForward()
+        walkPositionOne()
+    elif squares==2:
+        cycles = 2*squares
+        for i in range(0,int(floor(cycles))):
+            walkForward()
+        
+        walkPositionOne()
+        walkOneToTwo()
+        walkPositionTwo()
+    
+    
+    #if (floor(cycles) - cycles*2.5) != 0:
+    #    walkPositionOne()
+    #    walkOneToTwo()
+    #    walkPositionTwo()
+    
 
 # Main function
 if __name__ == "__main__":
@@ -332,7 +356,9 @@ if __name__ == "__main__":
         #sensor_reading = getSensorValue(IRPortLeft)
         #rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
        
-        walkForward()
+        walkForwardSquare(2)
+        while True:
+            1
         
         #turnLeft90Degrees()
         #for i in range(0, 7):
