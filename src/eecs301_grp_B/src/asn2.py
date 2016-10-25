@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import roslib
+import signal
+import sys
 import rospy
 from fw_wrapper.srv import *
 from map import *
 from math import floor
+from Queue import *
+import operator
 
 # -----------SERVICE DEFINITION-----------
 # allcmd REQUEST DATA
@@ -34,7 +38,7 @@ from math import floor
 
 # wrapper function to call service to set a motor mode
 # 0 = set target positions, 1 = set wheel moving
-def setMotorMode(motor_id, target_val):
+def setMotorMode(motor_id, target_val): #set target val to 1, to run setmotorwheelspeed, wheels will keep spinning after shutdown, need to catch that and set to zero 
     rospy.wait_for_service('allcmd')
     try:
         send_command = rospy.ServiceProxy('allcmd', allcmd)
@@ -334,39 +338,276 @@ def walkForwardSquare(squares):
     #    walkPositionOne()
     #    walkOneToTwo()
     #    walkPositionTwo()
+
+# Wheel Functions
+
+def wait(seconds):
+    initialTime = rospy.Time.now()
+    while rospy.Time.now() < initialTime + rospy.Duration(seconds):
+        continue
+
+
+# set modes of all motors 
+def setMotorModes():
+    setMotorMode(1, 1)
+    setMotorMode(2, 1)
+    setMotorMode(3, 1)
+    setMotorMode(4, 1)
+
+# set speed of all motors
+
+# shutdown all motors
+def shutdown(sig, stackframe):
+    rospy.loginfo("Setting wheels to zero")
+    for wheel in [1, 2, 3, 4]:
+        setMotorWheelSpeed(wheel, 0)
+    sys.exit(0)
+
+#set all wheel speeds to zero
+def setWheelsToZero():
+    for wheel in [2, 1, 3, 4]:
+        setMotorWheelSpeed(wheel, 0)
+
+#Drive forward (numberOfSquares)
+
+def driveForward(time):
+    IRPortLeft = 2
+    IRPortRight = 3   
     
+    setMotorWheelSpeed(1, 509)
+    setMotorWheelSpeed(2, 1533)
+    setMotorWheelSpeed(3, 509)
+    setMotorWheelSpeed(4, 1533)
+    wait(time)
+    setWheelsToZero()
+
+
+#Turn left
+
+def wTurnRight():
+    setMotorWheelSpeed(1, 460)
+    setMotorWheelSpeed(2, 460)
+    setMotorWheelSpeed(3, 460)
+    setMotorWheelSpeed(4, 460)
+    wait(2)
+    setWheelsToZero()
+    #left wheels forward, right wheels backwards
+    #time, then set motor wheel speed to zero for each, or just cont driving straight
+    return
+    
+#Turn right
+
+def wTurnLeft():
+    setMotorWheelSpeed(1, 1500)
+    setMotorWheelSpeed(2, 1400)
+    setMotorWheelSpeed(3, 1400)
+    setMotorWheelSpeed(4, 1500)
+    wait(2.45)
+    setWheelsToZero()
+    return
+
+#Turn around
+
+def wTurnAround():
+    wTurnRight()
+    wTurnRight()
+    return
+
+# path planner
+
+def pathPlanner(s1, s2, startHeading, e1, e2, endHeading):
+    startPos = [int(s1), int(s2)]
+    endPos = [int(e1), int(e2)]
+    currCost = 1
+    pathMap = EECSMap()
+    pathMap.clearCostMap()
+    mapQueue = Queue()
+    mapQueue.put(startPos)
+    currPos = startPos
+    currCost = 0
+    pathMap.costMap[currPos[0]][currPos[1]] = 0
+    visited = []
+    visited.append(currPos)
+    while mapQueue.empty() == False:
+        currPos = mapQueue.get()
+        currCost = pathMap.costMap[currPos[0]][currPos[1]]
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.North) == 0 and ([currPos[0]-1, currPos[1]] in visited) == False:
+            mapQueue.put([currPos[0]-1, currPos[1]])
+            visited.append([currPos[0]-1, currPos[1]])
+            pathMap.costMap[currPos[0]-1][currPos[1]] = currCost+1
+            print "North enqueue" + str(currPos[0]-1) + " " + str(currPos[1])
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.East) == 0 and ([currPos[0], currPos[1]+1] in visited) == False:
+            mapQueue.put([currPos[0], currPos[1]+1])
+            visited.append([currPos[0], currPos[1]+1])
+            pathMap.costMap[currPos[0]][currPos[1]+1] = currCost+1
+            print "East enqueue" + str(currPos[0]) + " " + str(currPos[1]+1)
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.South) == 0 and ([currPos[0]+1, currPos[1]] in visited) == False:
+            mapQueue.put([currPos[0]+1, currPos[1]])
+            visited.append([currPos[0]+1, currPos[1]])
+            pathMap.costMap[currPos[0]+1][currPos[1]] = currCost+1
+            print "South enqueue" + str(currPos[0]+1) + " " + str(currPos[1])
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.West) == 0 and ([currPos[0], currPos[1]-1] in visited) == False:
+            mapQueue.put([currPos[0], currPos[1]-1])
+            visited.append([currPos[0], currPos[1]-1])
+            pathMap.costMap[currPos[0]][currPos[1]-1] = currCost+1
+            print "West enqueue" + str(currPos[0]) + " " + str(currPos[1]-1)
+        #if currPos == endPos:
+        #    break
+    pathMap.printCostMap()
+    pathMap.printObstacleMap()
+
+
+    currPos = endPos
+    lastPos = endPos
+    currHeading = startHeading
+    directions = []
+    positions = []
+    positions.append(endPos)
+    
+    while currPos != startPos:
+        #print currHeading
+        print currPos
+        
+        neighborsCost = []
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.North) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.North))
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.East) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.East))
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.South) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.South))
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.West) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.West))
+    
+        #print neighborsCost
+        
+        minCost = min(neighborsCost)
+        
+        #DIRECTION = enum(North=1, East=2, South=3, West=4)
+        
+        if minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.North):
+            
+            currPos = [currPos[0]-1, currPos[1]]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+        elif minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.East):
+
+            currPos = [currPos[0], currPos[1]+1]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+        elif minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.South):
+            
+            currPos = [currPos[0]+1, currPos[1]]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+        elif minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.West):
+
+            currPos = [currPos[0], currPos[1]-1]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+    print startPos
+    commands = []
+    for i in range(0,len(directions)):
+
+        if ((directions[-i-1] == [-1,0] and currHeading == 3) or
+            (directions[-i-1] == [0,-1] and currHeading == 2) or
+            (directions[-i-1] == [1, 0] and currHeading == 1) or
+            (directions[-i-1] == [0, 1] and currHeading == 4) ):
+            commands.append("straight")
+            currHeading = currHeading
+        elif ((directions[-i-1] == [-1,0] and currHeading == 4) or
+            (directions[-i-1] == [0,-1] and currHeading == 3) or
+            (directions[-i-1] == [1, 0] and currHeading == 2) or
+            (directions[-i-1] == [0, 1] and currHeading == 1) ):
+            commands.append("left")
+            currHeading = (currHeading + 3)%4
+        elif ((directions[-i-1] == [-1,0] and currHeading == 1) or
+            (directions[-i-1] == [0,-1] and currHeading == 4) or
+            (directions[-i-1] == [1, 0] and currHeading == 3) or
+            (directions[-i-1] == [0, 1] and currHeading == 2) ):
+            commands.append("reverse")
+            currHeading = (currHeading + 2)%4
+        elif ((directions[-i-1] == [-1,0] and currHeading == 2) or
+              (directions[-i-1] == [0,-1] and currHeading == 1) or
+              (directions[-i-1] == [1, 0] and currHeading == 4) or
+              (directions[-i-1] == [0, 1] and currHeading == 3) ):
+            commands.append("right")
+            currHeading = (currHeading + 1)%4
+                
+        if currHeading > 4:
+            currHeading = currHeading - 4
+        elif currHeading < 1:
+            currHeading = currHeading + 4
+
+    if (currHeading-endHeading)==1 or (currHeading-endHeading)==-3:
+        commands.append("left turn")
+    elif (currHeading-endHeading)==-1 or (currHeading-endHeading)==3:
+        commands.append("right turn")
+    elif (currHeading-endHeading)==2 or (currHeading-endHeading)==-2:
+        commands.append("turn around")
+    
+    print commands
+    return commands
 
 # Main function
 if __name__ == "__main__":
     rospy.init_node('example_node', anonymous=True)
     rospy.loginfo("Starting Group X Control Node...")
-
+    
+    signal.signal(signal.SIGINT, shutdown)
     # control loop running at 10hz
     r = rospy.Rate(10) # 10hz
-    setAllMotorTargetSpeeds(300)
+    setMotorModes();
 
 
     DMSPort = 1
     IRPortLeft = 2
     IRPortRight = 3
+    TIME_FORWARD = 3.4
     
     while not rospy.is_shutdown():
+        
+        
+        #print getSensorValue(IRPortRight)
+        
         # call function to get sensor value
 
-        #sensor_reading = getSensorValue(IRPortLeft)
-        #rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
-       
-        walkForwardSquare(2)
-        while True:
-            1
         
-        #turnLeft90Degrees()
-        #for i in range(0, 7):
-        #    walkForward()
-        #walkPositionOne()
-        #walkOneToTwo()
-        #walkPositionTwo()
-        #while True:
-        #    1
-        # sleep to enforce loop rate
+        #rospy.loginfo("Sensor value at port %d: %f", IRPortLeft, sensor_reading)
+        #startPos = [int(sys.argv[0][1])
+        print sys.argv
+        commands = pathPlanner(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5], int(sys.argv[6]))
+        i = 0
+        while i < len(commands):
+            count = 1
+            while commands[i+count] == "straight":
+                count = count + 1
+            print str(i) + "th command is " + commands[i]
+            if commands[i] == "straight":
+                driveForward(count*TIME_FORWARD)
+            elif commands[i] == "left":
+                wTurnLeft()
+                driveForward(count*TIME_FORWARD)
+            elif commands[i] == "right":
+                wTurnRight()
+                driveForward(count*TIME_FORWARD)
+            elif commands[i] == "reverse":
+                wTurnAround()
+                driveForward(count*TIME_FORWARD)
+            elif commands[i] == "left turn":
+                wTurnLeft()
+            elif commands[i] == "right turn":
+                wTurnRight()
+            elif commands[i] == "turn around":
+                wTurnAround()
+            i = i+count
+        while True:
+            setWheelsToZero()
         r.sleep()

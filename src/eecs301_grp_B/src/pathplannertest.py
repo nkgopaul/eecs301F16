@@ -55,7 +55,7 @@ def pathPlanner(startPos, startHeading, endPos, endHeading):
     
     while currPos != startPos:
         #print currHeading
-        #print currPos
+        print currPos
         
         neighborsCost = []
         if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.North) == 0:
@@ -102,9 +102,6 @@ def pathPlanner(startPos, startHeading, endPos, endHeading):
             lastPos = currPos
 
 
-
-    print directions
-
     commands = []
     for i in range(0,len(directions)):
 
@@ -145,8 +142,8 @@ def pathPlanner(startPos, startHeading, endPos, endHeading):
     elif (currHeading-endHeading)==2 or (currHeading-endHeading)==-2:
         commands.append("turn around")
     
-    
     print commands
+    return commands
 
 
 pathPlanner([7, 6], 2, [0, 6], 1)
