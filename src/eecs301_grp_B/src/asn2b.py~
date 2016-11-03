@@ -573,8 +573,11 @@ def pathPlanner(s1, s2, startHeading, e1, e2, pathMap):
 
 def updateWheelSpeed(currentL, currentR, lastL, lastR):
 
-    feedbackConstant = 0.2
-    derivConstant = -0.2
+    feedbackConstantClose = 0.2
+    derivConstantClose = -0.2
+    
+    feedbackConstantFar = 1
+    derivConstantFar = -1
     
     feedbackConstantMiddle = 0.1
     derivConstantMiddle = -0.9
@@ -583,9 +586,11 @@ def updateWheelSpeed(currentL, currentR, lastL, lastR):
     DMSPort = 1
     IRPortLeft = 2
     IRPortRight = 3
-    upperIRLeft = 339 #339
-    upperIRRight = 277 #277
- 
+    upperIRLeft = 380 #339
+    upperIRRight = 317 #277
+    lowerIRLeft = 300
+    lowerIRRight = 237
+    
     wheelSpeedLeft = 500
     wheelSpeedRight = 1028+500
 
@@ -597,9 +602,14 @@ def updateWheelSpeed(currentL, currentR, lastL, lastR):
             wheelSpeedRight = wheelSpeedRight + feedbackConstantMiddle*(currentR-currentL) + derivConstantMiddle*(currentL-lastL)
         
     elif currentL != 0 and currentL >= upperIRLeft:
-        wheelSpeedRight = wheelSpeedRight + feedbackConstant*(upperIRLeft-currentL) + derivConstant*(currentL - lastL)
+        wheelSpeedRight = wheelSpeedRight + feedbackConstantClose*(upperIRLeft-currentL) + derivConstantClose*(currentL - lastL)
     elif currentR != 0 and currentR >= upperIRRight:
-        wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(upperIRRight-currentR) + derivConstant*(currentR - lastR)
+        wheelSpeedLeft = wheelSpeedLeft + feedbackConstantClose*(upperIRRight-currentR) + derivConstantClose*(currentR - lastR)
+    elif currentL != 0 and currentL < lowerIRLeft:
+        print "a"
+        wheelSpeedLeft = wheelSpeedLeft + feedbackConstantFar*(lowerIRLeft-currentL) + derivConstantFar*(currentL - lastL)
+    elif currentR != 0 and currentR < lowerIRRight:
+        wheelSpeedRight = wheelSpeedRight + feedbackConstantFar*(upperIRRight-currentR) + derivConstantFar*(currentR - lastR)
 
 
     setMotorWheelSpeed(1, wheelSpeedLeft)
