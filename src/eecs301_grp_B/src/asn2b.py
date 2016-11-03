@@ -375,10 +375,10 @@ def driveForward(time):
     IRPortLeft = 2
     IRPortRight = 3   
     
-    setMotorWheelSpeed(1, 509)
-    setMotorWheelSpeed(2, 1533)
-    setMotorWheelSpeed(3, 509)
-    setMotorWheelSpeed(4, 1533)
+    setMotorWheelSpeed(1, 500)
+    setMotorWheelSpeed(2, 1028 + 500)
+    setMotorWheelSpeed(3, 500)
+    setMotorWheelSpeed(4, 1028 + 500)
     wait(time)
     setWheelsToZero()
 
@@ -572,34 +572,37 @@ def pathPlanner(s1, s2, startHeading, e1, e2, pathMap):
     return currHeading
 
 def updateWheelSpeed(currentL, currentR, lastL, lastR):
-
-    feedbackConstant = 0.2
-    derivConstant = -0.2
     
-    feedbackConstantMiddle = 0.1
-    derivConstantMiddle = -0.9
+    feedbackConstant = -0.1
+    derivConstant = 0.2
     
 
     DMSPort = 1
     IRPortLeft = 2
     IRPortRight = 3
-    upperIRLeft = 339 #339
-    upperIRRight = 277 #277
+    desiredIRLeft = 339 #339
+    desiredIRRight = 277 #277
  
     wheelSpeedLeft = 500
     wheelSpeedRight = 1028+500
 
 
     if currentL != 0 and currentR != 0:
-        if currentL > currentR:
-            wheelSpeedLeft = wheelSpeedLeft + feedbackConstantMiddle*(currentL-currentR) + derivConstantMiddle*(currentR-lastR)
-        elif currentR >= currentL:
-            wheelSpeedRight = wheelSpeedRight + feedbackConstantMiddle*(currentR-currentL) + derivConstantMiddle*(currentL-lastL)
+        if currentL > desiredIRLeft:
+            wheelSpeedRight = wheelSpeedRight + feedbackConstant*(currentL-desiredIRLeft) + derivConstant*(currentL-lastL)
+        else:
+            wheelSpeedLeft = wheelSpeedLeft + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
         
-    elif currentL != 0 and currentL >= upperIRLeft:
-        wheelSpeedRight = wheelSpeedRight + feedbackConstant*(upperIRLeft-currentL) + derivConstant*(currentL - lastL)
-    elif currentR != 0 and currentR >= upperIRRight:
-        wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(upperIRRight-currentR) + derivConstant*(currentR - lastR)
+    elif currentL != 0 and currentR == 0:
+        if currentL > desiredIRLeft:
+            wheelSpeedRight = wheelSpeedRight + feedbackConstant*(currentL-desiredIRLeft) + derivConstant*(currentL-lastL)
+        else:
+            wheelSpeedLeft = wheelSpeedLeft + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
+    elif currentR != 0 and currentL == 0:
+        if currentR > desiredIRRight:
+            wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(currentR-desiredIRRight) + derivConstant*(currentR-lastR)
+        else:
+            wheelSpeedRight = wheelSpeedRight + -feedbackConstant*(currentR-desiredIRRight) + -derivConstant*(currentR-lastR)
 
 
     setMotorWheelSpeed(1, wheelSpeedLeft)
@@ -607,20 +610,26 @@ def updateWheelSpeed(currentL, currentR, lastL, lastR):
     setMotorWheelSpeed(3, wheelSpeedLeft)
     setMotorWheelSpeed(4, wheelSpeedRight)
 
+def forward():
+    setMotorWheelSpeed(1, 500)
+    setMotorWheelSpeed(2, 1028+500)
+    setMotorWheelSpeed(3, 500)
+    setMotorWheelSpeed(4, 1028+500)
+
 def reverse():
-    setMotorWheelSpeed(1, 1533)
-    setMotorWheelSpeed(2, 509)
-    setMotorWheelSpeed(3, 1533)
-    setMotorWheelSpeed(4, 509)
+    setMotorWheelSpeed(1, 1028+500)
+    setMotorWheelSpeed(2, 500)
+    setMotorWheelSpeed(3, 1028+500)
+    setMotorWheelSpeed(4, 500)
 
 def DriveForward():
-    
-    reverseThreshold = 2050;
+    forwardThreshold = 950
+    reverseThreshold = 2050
     DMSPort = 1
     IRPortLeft = 2
     IRPortRight = 3
     cumulativeTime = 0
-    walkTime = 0.78  # should be unit time for a square
+    walkTime = 0.89  # should be unit time for a square
     
     currentIRl = getSensorValue(IRPortLeft)
     currentIRr = getSensorValue(IRPortRight)
@@ -647,6 +656,10 @@ def DriveForward():
     DMSReading = getSensorValue(DMSPort);
     while getSensorValue(DMSPort) > reverseThreshold:
         reverse()
+        DMSReading = getSensorValue(DMSPort)
+    
+    while getSensorValue(DMSPort) > forwardThreshold and getSensorValue(DMSPort) < reverseThreshold:
+        forward()
         DMSReading = getSensorValue(DMSPort)
     
     setMotorWheelSpeed(1, 0)
@@ -720,9 +733,7 @@ if __name__ == "__main__":
     IRPortLeft = 2
     IRPortRight = 3
     TIME_FORWARD = 3.4
-    DMSThreshold = 1200
-    IR_RIGHT_THRESHOLD = 1150
-    IR_LEFT_THRESHOLD = 630
+    DMSThreshold = 950
     
     currHeading = 3
     currPos = [0,0]
@@ -732,9 +743,6 @@ if __name__ == "__main__":
     pathMap = EECSMap()
     
     while not rospy.is_shutdown():
-            
-        while True:
-            DriveForward()
         #print getSensorValue(IRPortRight)
         
         # call function to get sensor value
@@ -746,10 +754,19 @@ if __name__ == "__main__":
         print currHeading
         print decisionPosArr
         
+        if currPos[0] < 0:
+            currPos[0] = 0
+        elif currPos[0] > 7:
+            currPos[0] = 7
+        if currPos[1] < 0:
+            currPos[1] = 0
+        elif currPos[1] > 7:
+            currPos[1] = 7
+        
         visitedMap[currPos[0], currPos[1]] = 1        
 
         DMS = getSensorValue(DMSPort)
-        rospy.loginfo("Sensor value at port %d: %f", DMSPort, DMS)
+        rospy.loginfo("Sensor value at port %d: %f", IRPortRight, DMS)
         IRRight = getSensorValue(IRPortRight)
         IRLeft = getSensorValue(IRPortLeft)
         
