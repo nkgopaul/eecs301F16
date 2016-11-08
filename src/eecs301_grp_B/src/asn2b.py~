@@ -573,15 +573,15 @@ def pathPlanner(s1, s2, startHeading, e1, e2, pathMap):
 
 def updateWheelSpeed(currentL, currentR, lastL, lastR):
     
-    feedbackConstant = -0.05
-    derivConstant = 0.2
+    feedbackConstant = 0.2
+    derivConstant = 0.1
     
 
     DMSPort = 1
     IRPortLeft = 2
     IRPortRight = 3
-    desiredIRLeft = 339 #339
-    desiredIRRight = 277 #277
+    desiredIRLeft = 290 #339
+    desiredIRRight = 440 #277
  
     wheelSpeedLeft = 500
     wheelSpeedRight = 1028+500
@@ -589,20 +589,19 @@ def updateWheelSpeed(currentL, currentR, lastL, lastR):
 
     if currentL != 0 and currentR != 0:
         if currentL > desiredIRLeft:
-            wheelSpeedRight = wheelSpeedRight + feedbackConstant*(currentL-desiredIRLeft) + derivConstant*(currentL-lastL)
+            wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
         else:
-            wheelSpeedLeft = wheelSpeedLeft + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
-        
+            wheelSpeedRight = wheelSpeedRight + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
     elif currentL != 0 and currentR == 0:
         if currentL > desiredIRLeft:
-            wheelSpeedRight = wheelSpeedRight + feedbackConstant*(currentL-desiredIRLeft) + derivConstant*(currentL-lastL)
+            wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
         else:
-            wheelSpeedLeft = wheelSpeedLeft + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
+            wheelSpeedRight = wheelSpeedRight + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
     elif currentR != 0 and currentL == 0:
         if currentR > desiredIRRight:
-            wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(currentR-desiredIRRight) + derivConstant*(currentR-lastR)
+            wheelSpeedRight = wheelSpeedRight + feedbackConstant*(currentR-desiredIRRight) + -derivConstant*(currentR-lastR)
         else:
-            wheelSpeedRight = wheelSpeedRight + -feedbackConstant*(currentR-desiredIRRight) + -derivConstant*(currentR-lastR)
+            wheelSpeedLeft = wheelSpeedLeft + -feedbackConstant*(currentR-desiredIRRight) + -derivConstant*(currentR-lastR)
 
 
     setMotorWheelSpeed(1, wheelSpeedLeft)
@@ -766,9 +765,12 @@ if __name__ == "__main__":
         visitedMap[currPos[0], currPos[1]] = 1        
 
         DMS = getSensorValue(DMSPort)
-        rospy.loginfo("Sensor value at port %d: %f", IRPortRight, DMS)
+        
         IRRight = getSensorValue(IRPortRight)
         IRLeft = getSensorValue(IRPortLeft)
+        rospy.loginfo("Sensor value at port IRRight " + str(IRRight))
+        rospy.loginfo("Sensor value at port IRLeft " + str(IRLeft))
+        print(decisionPosArr)
         
         if (DMS < DMSThreshold) and (IRRight > 0) and (IRLeft > 0):
             DriveForward()
@@ -876,7 +878,7 @@ if __name__ == "__main__":
             pathMap.setObstacle(currPos[0], currPos[1], 0, HeadingConvert((currHeading+1)%4))
             currHeading = HeadingConvert((currHeading+3)%4)
             currPos = UpdateCurrentPosition(currPos, currHeading)
-            
+            print("entered condition, turned left")
             
             
             
