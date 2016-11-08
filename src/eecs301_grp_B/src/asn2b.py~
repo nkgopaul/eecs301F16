@@ -571,10 +571,177 @@ def pathPlanner(s1, s2, startHeading, e1, e2, pathMap):
                 
     return currHeading
 
+def pathPlanner2(s1, s2, startHeading, e1, e2, endHeading, pathMap):
+    startPos = [int(s1), int(s2)]
+    endPos = [int(e1), int(e2)]
+    currCost = 1
+    pathMap.clearCostMap()
+    mapQueue = Queue()
+    mapQueue.put(startPos)
+    currPos = startPos
+    currCost = 0
+    pathMap.costMap[currPos[0]][currPos[1]] = 0
+    visited = []
+    visited.append(currPos)
+    while mapQueue.empty() == False:
+        currPos = mapQueue.get()
+        currCost = pathMap.costMap[currPos[0]][currPos[1]]
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.North) == 0 and ([currPos[0]-1, currPos[1]] in visited) == False:
+            mapQueue.put([currPos[0]-1, currPos[1]])
+            visited.append([currPos[0]-1, currPos[1]])
+            pathMap.costMap[currPos[0]-1][currPos[1]] = currCost+1
+            print "North enqueue" + str(currPos[0]-1) + " " + str(currPos[1])
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.East) == 0 and ([currPos[0], currPos[1]+1] in visited) == False:
+            mapQueue.put([currPos[0], currPos[1]+1])
+            visited.append([currPos[0], currPos[1]+1])
+            pathMap.costMap[currPos[0]][currPos[1]+1] = currCost+1
+            print "East enqueue" + str(currPos[0]) + " " + str(currPos[1]+1)
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.South) == 0 and ([currPos[0]+1, currPos[1]] in visited) == False:
+            mapQueue.put([currPos[0]+1, currPos[1]])
+            visited.append([currPos[0]+1, currPos[1]])
+            pathMap.costMap[currPos[0]+1][currPos[1]] = currCost+1
+            print "South enqueue" + str(currPos[0]+1) + " " + str(currPos[1])
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.West) == 0 and ([currPos[0], currPos[1]-1] in visited) == False:
+            mapQueue.put([currPos[0], currPos[1]-1])
+            visited.append([currPos[0], currPos[1]-1])
+            pathMap.costMap[currPos[0]][currPos[1]-1] = currCost+1
+            print "West enqueue" + str(currPos[0]) + " " + str(currPos[1]-1)
+        #if currPos == endPos:
+        #    break
+    pathMap.printCostMap()
+    pathMap.printObstacleMap()
+
+
+    currPos = endPos
+    lastPos = endPos
+    currHeading = startHeading
+    directions = []
+    positions = []
+    positions.append(endPos)
+    
+    while currPos != startPos:
+        #print currHeading
+        print currPos
+        
+        neighborsCost = []
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.North) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.North))
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.East) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.East))
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.South) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.South))
+        if pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.West) == 0:
+            neighborsCost.append(pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.West))
+    
+        #print neighborsCost
+        
+        minCost = min(neighborsCost)
+        
+        #DIRECTION = enum(North=1, East=2, South=3, West=4)
+        
+        if minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.North) and pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.North) == 0:
+            
+            currPos = [currPos[0]-1, currPos[1]]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+        elif minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.East) and pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.East) == 0:
+
+            currPos = [currPos[0], currPos[1]+1]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+        elif minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.South) and pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.South) == 0:
+            
+            currPos = [currPos[0]+1, currPos[1]]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+        elif minCost == pathMap.getNeighborCost(currPos[0],currPos[1], DIRECTION.West) and pathMap.getNeighborObstacle(currPos[0], currPos[1], DIRECTION.West) == 0:
+
+            currPos = [currPos[0], currPos[1]-1]
+            positions.append(currPos)
+            directions.append(list(map(operator.sub, currPos, lastPos)))
+            lastPos = currPos
+
+    print startPos
+    commands = []
+    for i in range(0,len(directions)):
+
+        if ((directions[-i-1] == [-1,0] and currHeading == 3) or
+            (directions[-i-1] == [0,-1] and currHeading == 2) or
+            (directions[-i-1] == [1, 0] and currHeading == 1) or
+            (directions[-i-1] == [0, 1] and currHeading == 4) ):
+            commands.append("straight")
+            currHeading = currHeading
+        elif ((directions[-i-1] == [-1,0] and currHeading == 4) or
+            (directions[-i-1] == [0,-1] and currHeading == 3) or
+            (directions[-i-1] == [1, 0] and currHeading == 2) or
+            (directions[-i-1] == [0, 1] and currHeading == 1) ):
+            commands.append("left")
+            currHeading = (currHeading + 3)%4
+        elif ((directions[-i-1] == [-1,0] and currHeading == 1) or
+            (directions[-i-1] == [0,-1] and currHeading == 4) or
+            (directions[-i-1] == [1, 0] and currHeading == 3) or
+            (directions[-i-1] == [0, 1] and currHeading == 2) ):
+            commands.append("reverse")
+            currHeading = (currHeading + 2)%4
+        elif ((directions[-i-1] == [-1,0] and currHeading == 2) or
+              (directions[-i-1] == [0,-1] and currHeading == 1) or
+              (directions[-i-1] == [1, 0] and currHeading == 4) or
+              (directions[-i-1] == [0, 1] and currHeading == 3) ):
+            commands.append("right")
+            currHeading = (currHeading + 1)%4
+                
+        if currHeading > 4:
+            currHeading = currHeading - 4
+        elif currHeading < 1:
+            currHeading = currHeading + 4
+            
+    if (currHeading-endHeading)==1 or (currHeading-endHeading)==-3:
+        commands.append("left turn")
+    elif (currHeading-endHeading)==-1 or (currHeading-endHeading)==3:
+        commands.append("right turn")
+    elif (currHeading-endHeading)==2 or (currHeading-endHeading)==-2:
+        commands.append("turn around")
+        
+    print commands
+    i = 0
+    while i < len(commands):
+#            count = 1
+#            if i+count < len(commands)-1:
+#                while commands[i+count] == "straight":
+#                    count = count + 1
+#                    if i+count > len(commands)-1:
+#                        break;
+            print str(i) + "th command is " + commands[i]
+            if commands[i] == "straight":
+                DriveForward()
+            elif commands[i] == "left":
+                wTurnLeft()
+                DriveForward()
+            elif commands[i] == "right":
+                wTurnRight()
+                DriveForward()
+            elif commands[i] == "reverse":
+                wTurnAround()
+                DriveForward()
+            elif commands[i] == "left turn":
+                wTurnLeft()
+            elif commands[i] == "right turn":
+                wTurnRight()
+            elif commands[i] == "turn around":
+                wTurnAround()
+            i = i + 1 # count
+ 
+
 def updateWheelSpeed(currentL, currentR, lastL, lastR):
     
     feedbackConstant = 0.4
-    derivConstant = 0.2
+    derivConstant = 0.4
     
 
     DMSPort = 1
@@ -738,6 +905,7 @@ if __name__ == "__main__":
     currPos = [0,0]
     visitedMap = numpy.zeros((8,8))
     decisionPosArr = []
+    stepsTaken = 0
     
     pathMap = EECSMap()
     
@@ -920,6 +1088,14 @@ if __name__ == "__main__":
             decisionPosArr.pop(-1)
        
         pathMap.printObstacleMap()
-       
-       
+        stepsTaken = stepsTaken + 1
+        
+        if(stepsTaken%5 == 0):
+            command = raw_input("Enter p to start pathplanning...")
+            if(command == "p"):
+                while(command == "p"):
+                    pInput = raw_input("Enter path planner input...")
+                    #pathPlanner2(s1, s2, startHeading, e1, e2, endHeading, pathMap)
+                    pathPlanner2(pInput[0], pInput[2], pInput[4], pInput[6], pInput[8], pInput[10], pathMap)
+                    command = raw_input("Enter p to continue pathplanning...")
         r.sleep()
