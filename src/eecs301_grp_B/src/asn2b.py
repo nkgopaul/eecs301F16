@@ -390,7 +390,7 @@ def wTurnRight():
     setMotorWheelSpeed(2, 460)
     setMotorWheelSpeed(3, 460)
     setMotorWheelSpeed(4, 460)
-    wait(2)
+    wait(1.8)
     setWheelsToZero()
     #left wheels forward, right wheels backwards
     #time, then set motor wheel speed to zero for each, or just cont driving straight
@@ -403,7 +403,7 @@ def wTurnLeft():
     setMotorWheelSpeed(2, 1400)
     setMotorWheelSpeed(3, 1400)
     setMotorWheelSpeed(4, 1500)
-    wait(2.45)
+    wait(2.3)
     setWheelsToZero()
     return
 
@@ -740,31 +740,31 @@ def pathPlanner2(s1, s2, startHeading, e1, e2, endHeading, pathMap):
 
 def updateWheelSpeed(currentL, currentR, lastL, lastR):
     
-    feedbackConstant = 0.4
-    derivConstant = 0.4
+    feedbackConstant = 0.1 #1
+    derivConstant = 0# 10 #0.2
     
 
     DMSPort = 1
     IRPortLeft = 2
     IRPortRight = 3
-    desiredIRLeft = 290 #339
-    desiredIRRight = 440 #277
+    desiredIRLeft = 400 #339
+    desiredIRRight = 400 #277
  
     wheelSpeedLeft = 500
     wheelSpeedRight = 1028+500
 
 
-    if currentL > 80 and currentR > 80:
+    if currentL > 50 and currentR > 50:
         if currentL > desiredIRLeft:
             wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
         else:
             wheelSpeedRight = wheelSpeedRight + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
-    elif currentL > 80 and currentR <= 80:
+    elif currentL > 50 and currentR <= 50:
         if currentL > desiredIRLeft:
             wheelSpeedLeft = wheelSpeedLeft + feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
         else:
             wheelSpeedRight = wheelSpeedRight + -feedbackConstant*(currentL-desiredIRLeft) + -derivConstant*(currentL-lastL)
-    elif currentR > 80 and currentL <= 80:
+    elif currentR > 50 and currentL <= 50:
         if currentR > desiredIRRight:
             wheelSpeedRight = wheelSpeedRight + feedbackConstant*(currentR-desiredIRRight) + -derivConstant*(currentR-lastR)
         else:
@@ -795,7 +795,7 @@ def DriveForward():
     IRPortLeft = 2
     IRPortRight = 3
     cumulativeTime = 0
-    walkTime = 0.89  # should be unit time for a square
+    walkTime = 0.79  # should be unit time for a square
     
     currentIRl = getSensorValue(IRPortLeft)
     currentIRr = getSensorValue(IRPortRight)
@@ -942,19 +942,19 @@ if __name__ == "__main__":
         rospy.loginfo("Sensor value at port DMS " + str(DMS))
         print(decisionPosArr)
         
-        if (DMS < DMSThreshold) and (IRRight > 80) and (IRLeft > 80):
+        if (DMS < DMSThreshold) and (IRRight > 50) and (IRLeft > 50):
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, currHeading)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS >= DMSThreshold) and (IRRight <= 80) and (IRLeft > 80):
+        elif (DMS >= DMSThreshold) and (IRRight <= 50) and (IRLeft > 50):
             wTurnRight()
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, HeadingConvert((currHeading+1)%4))
             currHeading = HeadingConvert((currHeading+1)%4)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS >= DMSThreshold) and (IRRight > 80) and (IRLeft <= 80):
+        elif (DMS >= DMSThreshold) and (IRRight > 50) and (IRLeft <= 50):
             wTurnLeft()
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, HeadingConvert((currHeading+3)%4))
@@ -963,14 +963,14 @@ if __name__ == "__main__":
             
             ######################################################## multiple unexplored #############################################################################################
             
-        elif (DMS < DMSThreshold) and (IRRight <= 80) and (IRLeft > 80) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):        
+        elif (DMS < DMSThreshold) and (IRRight <= 50) and (IRLeft > 50) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):        
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, currHeading)
             pathMap.setObstacle(currPos[0], currPos[1], 0, HeadingConvert((currHeading+1)%4))
             decisionPosArr.append(currPos)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS < DMSThreshold) and (IRRight > 80) and (IRLeft <= 80) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight > 50) and (IRLeft <= 50) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, currHeading)
@@ -978,7 +978,7 @@ if __name__ == "__main__":
             decisionPosArr.append(currPos)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS >= DMSThreshold) and (IRRight <= 80) and (IRLeft <= 80) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "left", currPos, visitedMap)):
+        elif (DMS >= DMSThreshold) and (IRRight <= 50) and (IRLeft <= 50) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "left", currPos, visitedMap)):
        
             wTurnRight()
             DriveForward()
@@ -988,7 +988,7 @@ if __name__ == "__main__":
             currHeading = HeadingConvert((currHeading+1)%4)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS < DMSThreshold) and (IRRight <= 80) and (IRLeft <= 80) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight <= 50) and (IRLeft <= 50) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, currHeading)
@@ -999,14 +999,14 @@ if __name__ == "__main__":
             
             ################################################################ unexplored and explored #################################################################
             
-        elif (DMS < DMSThreshold) and (IRRight <= 80) and (IRLeft > 80) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight <= 50) and (IRLeft > 50) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
        
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, currHeading)
             pathMap.setObstacle(currPos[0], currPos[1], 0, HeadingConvert((currHeading+1)%4))
             currPos = UpdateCurrentPosition(temp, currHeading)
             
-        elif (DMS < DMSThreshold) and (IRRight <= 80) and (IRLeft > 80) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight <= 50) and (IRLeft > 50) and (not CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
        
             wTurnRight()
             DriveForward()
@@ -1015,14 +1015,14 @@ if __name__ == "__main__":
             currHeading = HeadingConvert((currHeading+1)%4)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS < DMSThreshold) and (IRRight > 80) and (IRLeft <= 80) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight > 50) and (IRLeft <= 50) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
             DriveForward()
             pathMap.setObstacle(currPos[0], currPos[1], 0, currHeading)
             pathMap.setObstacle(currPos[0], currPos[1], 0, HeadingConvert((currHeading+3)%4))
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS < DMSThreshold) and (IRRight > 80) and (IRLeft <= 80) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight > 50) and (IRLeft <= 50) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
             wTurnLeft()
             DriveForward()
@@ -1031,7 +1031,7 @@ if __name__ == "__main__":
             currHeading = HeadingConvert((currHeading+3)%4)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS >= DMSThreshold) and (IRRight <= 80) and (IRLeft <= 80) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "right", currPos, visitedMap)):
+        elif (DMS >= DMSThreshold) and (IRRight <= 50) and (IRLeft <= 50) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "right", currPos, visitedMap)):
         
             wTurnRight()
             DriveForward()
@@ -1040,7 +1040,7 @@ if __name__ == "__main__":
             currHeading = HeadingConvert((currHeading+1)%4)
             currPos = UpdateCurrentPosition(currPos, currHeading)
             
-        elif (DMS >= DMSThreshold) and (IRRight <= 80) and (IRLeft <= 80) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (CheckExplored(currHeading, "right", currPos, visitedMap)):
+        elif (DMS >= DMSThreshold) and (IRRight <= 50) and (IRLeft <= 50) and (not CheckExplored(currHeading, "left", currPos, visitedMap)) and (CheckExplored(currHeading, "right", currPos, visitedMap)):
         
             wTurnLeft()
             DriveForward()
@@ -1056,25 +1056,25 @@ if __name__ == "__main__":
             
         ################################################################### multiple explored openings ########################################################
             
-        elif (DMS < DMSThreshold) and (IRRight <= 80) and (IRLeft > 80) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight <= 50) and (IRLeft > 50) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
            currHeading = pathPlanner(currPos[0], currPos[1], currHeading, decisionPosArr[-1][0], decisionPosArr[-1][1], pathMap)
            currPos = [decisionPosArr[-1][0], decisionPosArr[-1][1]]
            decisionPosArr.pop([-1])
             
-        elif (DMS < DMSThreshold) and (IRRight > 80) and (IRLeft <= 80) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight > 50) and (IRLeft <= 50) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
             currHeading = pathPlanner(currPos[0], currPos[1], currHeading, decisionPosArr[-1][0], decisionPosArr[-1][1], pathMap)
             currPos = [decisionPosArr[-1][0], decisionPosArr[-1][1]]
             decisionPosArr.pop([-1])
             
-        elif (DMS >= DMSThreshold) and (IRRight <= 80) and (IRLeft <= 80) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "left", currPos, visitedMap)):
+        elif (DMS >= DMSThreshold) and (IRRight <= 50) and (IRLeft <= 50) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "left", currPos, visitedMap)):
        
             currHeading = pathPlanner(currPos[0], currPos[1], currHeading, decisionPosArr[-1][0], decisionPosArr[-1][1], pathMap)
             currPos = [decisionPosArr[-1][0], decisionPosArr[-1][1]]
             decisionPosArr.pop([-1])
             
-        elif (DMS < DMSThreshold) and (IRRight <= 80) and (IRLeft <= 80) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
+        elif (DMS < DMSThreshold) and (IRRight <= 50) and (IRLeft <= 50) and (CheckExplored(currHeading, "right", currPos, visitedMap)) and (CheckExplored(currHeading, "left", currPos, visitedMap)) and (not CheckExplored(currHeading, "straight", currPos, visitedMap)):
         
             currHeading = pathPlanner(currPos[0], currPos[1], currHeading, decisionPosArr[-1][0], decisionPosArr[-1][1], pathMap)
             currPos = [decisionPosArr[-1][0], decisionPosArr[-1][1]]

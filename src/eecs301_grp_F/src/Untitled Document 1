@@ -1,0 +1,63 @@
+if getMotorPositionCommand(motor_id1) < 300:
+            response = setMotorTargetPositionCommand(motor_id1, 600)
+            response = setMotorTargetPositionCommand(motor_id2, 200)
+            response = setMotorTargetPositionCommand(motor_id6, 700)
+        
+        if getMotorPositionCommand(motor_id2) < 300:
+            response = setMotorTargetPositionCommand(motor_id2, 400)
+            response = setMotorTargetPositionCommand(motor_id1, 200)
+            response = setMotorTargetPositionCommand(motor_id5, 300)
+            
+            
+            
+            
+    if getMotorPositionCommand(motor_id1) < 312:
+            response = setMotorTargetPositionCommand(motor_id1, 512)
+            response = setMotorTargetPositionCommand(motor_id2, 800)
+            response = setMotorTargetPositionCommand(motor_id6, 800)
+            response = setMotorTargetPositionCommand(motor_id5, 256)
+        
+        if getMotorPositionCommand(motor_id2) > 712:
+            response = setMotorTargetPositionCommand(motor_id2, 512)
+            response = setMotorTargetPositionCommand(motor_id1, 200)
+            response = setMotorTargetPositionCommand(motor_id5, 200)
+            response = setMotorTargetPositionCommand(motor_id6, 768)
+        
+        if getMotorPositionCommand(motor_id4) < 312:
+            response = setMotorTargetPositionCommand(motor_id4, 512)
+            response = setMotorTargetPositionCommand(motor_id3, 800)
+            response = setMotorTargetPositionCommand(motor_id7, 800)
+            response = setMotorTargetPositionCommand(motor_id8, 256)
+        
+        if getMotorPositionCommand(motor_id3) > 712:
+            response = setMotorTargetPositionCommand(motor_id3, 512)
+            response = setMotorTargetPositionCommand(motor_id4, 200)
+            response = setMotorTargetPositionCommand(motor_id8, 200)
+            response = setMotorTargetPositionCommand(motor_id7, 768)
+            
+            
+            
+            
+            
+            
+            
+           while getIsMotorMovingCommand(motor_id5) != 1: 
+            response = setMotorTargetPositionCommand(motor_id5, 356) # Foot 1 up
+            
+        
+        #if getIsMotorMovingCommand(motor_id5) != 1:
+        #response = setMotorTargetPositionCommand(motor_id1, rout) # Leg 1 forward
+        #print getMotorPositionCommand(motor_id5)
+        print getIsMotorMovingCommand(motor_id5)
+        #while getIsMotorMovingCommand(motor_id5) == 1: # If Foot 1 up
+            #response = setMotorTargetPositionCommand(motor_id5, 256) # Foot 1 down
+            
+            #if getMotorPositionCommand(motor_id5) <= 257:
+             #   response = setMotorTargetPositionCommand(motor_id2, lout) # Foot 2 forward
+                
+            
+            
+           # response = setMotorTargetPositionCommand(motor_id1, rmid) # leg 1 center
+        
+        
+        # sleep to enforce loop rate
