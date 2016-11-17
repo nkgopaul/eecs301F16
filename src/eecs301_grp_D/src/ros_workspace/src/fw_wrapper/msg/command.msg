@@ -1,6 +1,0 @@
-string command_type
-int8 device_id
-int16 target_val
-int8 n_dev
-int8[] dev_ids
-int16[] target_vals

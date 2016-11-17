@@ -1,4 +1,0 @@
-string command_type
-int8 device_id
----
-int16 val

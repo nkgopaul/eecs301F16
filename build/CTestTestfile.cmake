@@ -7,3 +7,7 @@
 SUBDIRS(gtest)
 SUBDIRS(fw_wrapper)
 SUBDIRS(eecs301_grp_B)
+SUBDIRS(eecs301_grp_D)
+SUBDIRS(eecs301_grp_F)
+SUBDIRS(eecs301_grp_H)
+SUBDIRS(eecs301_grp_J)

@@ -7,6 +7,4 @@
 # new environment variables
 
 # modified environment variables
-export LD_LIBRARY_PATH="/home/rosuser/ros_workspace/devel/lib/x86_64-linux-gnu:/opt/ros/indigo/lib/x86_64-linux-gnu:/home/rosuser/ros_workspace/devel/lib:/opt/ros/indigo/lib"
-export PKG_CONFIG_PATH="/home/rosuser/ros_workspace/devel/lib/x86_64-linux-gnu/pkgconfig:/opt/ros/indigo/lib/x86_64-linux-gnu/pkgconfig:/home/rosuser/ros_workspace/devel/lib/pkgconfig:/opt/ros/indigo/lib/pkgconfig"
 export PWD="/home/rosuser/ros_workspace/build"

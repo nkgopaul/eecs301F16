@@ -127,6 +127,10 @@ IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   INCLUDE("/home/rosuser/ros_workspace/build/gtest/cmake_install.cmake")
   INCLUDE("/home/rosuser/ros_workspace/build/fw_wrapper/cmake_install.cmake")
   INCLUDE("/home/rosuser/ros_workspace/build/eecs301_grp_B/cmake_install.cmake")
+  INCLUDE("/home/rosuser/ros_workspace/build/eecs301_grp_D/cmake_install.cmake")
+  INCLUDE("/home/rosuser/ros_workspace/build/eecs301_grp_F/cmake_install.cmake")
+  INCLUDE("/home/rosuser/ros_workspace/build/eecs301_grp_H/cmake_install.cmake")
+  INCLUDE("/home/rosuser/ros_workspace/build/eecs301_grp_J/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
 
