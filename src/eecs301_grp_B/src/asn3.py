@@ -923,8 +923,8 @@ if __name__ == "__main__":
     stepsTaken = 0
     filename = "data.py"
     start_time = rospy.Time.now()
-    leftwheel_speed = 255+256+256+256
-    rightwheel_speed = -255-256-256-256#begin testing at 255 next time
+    leftwheel_speed = -255
+    rightwheel_speed = 255+256+256+256#begin testing at 255 next time
     
     if(rightwheel_speed < 1024 and rightwheel_speed >= 0):
         input_right = rightwheel_speed + 1024
