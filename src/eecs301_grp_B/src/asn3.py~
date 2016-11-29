@@ -364,23 +364,32 @@ def setMotorModes():
 
 # shutdown all motors
 def shutdown(sig, stackframe):
-    duration = rospy.Time.now()-start_time
+#    duration = rospy.Time.now()-start_time
     rospy.loginfo("Setting wheels to zero")
     for wheel in [1, 2, 3, 4]:
         setMotorWheelSpeed(wheel, 0)
-    confirm = raw_input("Enter 'l' to for left or 'r' for right...")
-    if(confirm == "l"):
-        csv_file = open("data.csv", 'a')
-        wr = csv.writer(csv_file)
-        wr.writerow([duration.to_sec(), leftwheel_speed, rightwheel_speed, 180])
-        print "Data recorded. Exiting..."
-    elif(confirm == "r"):
-        csv_file = open("data.csv", 'a')
-        wr = csv.writer(csv_file)
-        wr.writerow([duration.to_sec(), leftwheel_speed, rightwheel_speed, -180])
-        print "Data recorded. Exiting..."
-    else:
-        print "No data recorded. Exiting..."
+#    confirm = raw_input("Enter 'l' to for left or 'r' for right...")
+#    if(confirm == "l"):
+#        csv_file = open("data.csv", 'a')
+#        wr = csv.writer(csv_file)
+#        wr.writerow([duration.to_sec(), leftwheel_speed, rightwheel_speed, 180])
+#        print "Data recorded. Exiting..."
+#    elif(confirm == "r"):
+#        csv_file = open("data.csv", 'a')
+#        wr = csv.writer(csv_file)
+#        wr.writerow([duration.to_sec(), leftwheel_speed, rightwheel_speed, -180])
+#        print "Data recorded. Exiting..."
+#    else:
+#        print "No data recorded. Exiting..."
+#    l = leftwheel_speed
+#    r = rightwheel_speed
+#    duration = rospy.Time.now()-start_time
+#    t = duration.to_sec()
+#    w = -0.0464*l + 0.0482*r + 2.1088e-6*(l**2) -1.213e-6*(r**2) +6.959e-11*(l**3) -4.0709e-9*(r**3) -1.4529e-6*l*r +1.0919e-9*(l**2)*r -3.3666e-10*(r**2)*l -0.2542
+ #   heading = w*t
+ #   print "time is" + str(t)
+ #   print "angular speed is" + str(w)
+ #   print "Heading is now " + str(heading)
     sys.exit(0)
 
 #set all wheel speeds to zero
@@ -902,6 +911,36 @@ def UpdateCurrentPosition(currPos, currHeading):
     elif currHeading == 4:
         return [currPos[0], currPos[1]-1]
         
+        
+def driveHeading(left, right, duration, heading):
+	
+    currentTime = rospy.Time.now() + rospy.Duration(duration)
+	
+    if(right < 1024 and right >= 0):
+        input_right = right + 1024
+    elif(right<0 and right>-1024):
+        input_right = -right
+    if(left < 0): 
+        input_left = -left+1024
+    else:
+        input_left = left
+    
+    setMotorWheelSpeed(1, input_left)
+    setMotorWheelSpeed(2, input_right)
+    setMotorWheelSpeed(3, input_left)
+    setMotorWheelSpeed(4, input_right)
+    
+    while currentTime > rospy.Time.now():
+        continue
+    
+    l = left
+    r = right
+    w = -0.0464*l + 0.0482*r + 2.1088e-6*(l**2) -1.213e-6*(r**2) +6.959e-11*(l**3) -4.0709e-9*(r**3) -1.4529e-6*l*r +1.0919e-9*(l**2)*r -3.3666e-10*(r**2)*l -0.2542
+    heading = heading+w*duration
+    print "angular speed is" + str(w)
+    print "Heading is now " + str(heading)
+    return heading
+    
 
 # Main function
 if __name__ == "__main__":
@@ -920,25 +959,41 @@ if __name__ == "__main__":
     TIME_FORWARD = 3.4
     DMSThreshold = 950
 
-    stepsTaken = 0
-    filename = "data.py"
+#    stepsTaken = 0
+#    filename = "data.py"
+#    start_time = rospy.Time.now()
+#    leftwheel_speed = -255
+#    rightwheel_speed = 255+256+256+256#begin testing at 255 next time
+
+    inputs = [[200, 1000, 2], [600, 600, 2], [100, -200, 4], [400, 500, 3], [-1000, -875, 1], [-804, 723, 2], [945, -100, 3]]
+
     start_time = rospy.Time.now()
-    leftwheel_speed = 255+256+256+256
-    rightwheel_speed = -255-256-256-256#begin testing at 255 next time
+
+
+    rightwheel_speed = 1000
+    leftwheel_speed = -374
+    heading = 0
+ 
+    for i in range(0,len(inputs)):
+        heading = driveHeading(inputs[i][0], inputs[i][1], inputs[i][2], heading)
     
-    if(rightwheel_speed < 1024 and rightwheel_speed >= 0):
-        input_right = rightwheel_speed + 1024
-    elif(rightwheel_speed<0 and rightwheel_speed>-1024):
-        input_right = -rightwheel_speed
-    if(leftwheel_speed < 0): 
-        input_left = -leftwheel_speed+1024
-    else:
-        input_left = leftwheel_speed
+ 
     
-    setMotorWheelSpeed(1, input_left)
-    setMotorWheelSpeed(2, input_right)
-    setMotorWheelSpeed(3, input_left)
-    setMotorWheelSpeed(4, input_right)
+#    if(rightwheel_speed < 1024 and rightwheel_speed >= 0):
+#        input_right = rightwheel_speed + 1024
+#    elif(rightwheel_speed<0 and rightwheel_speed>-1024):
+#        input_right = -rightwheel_speed
+#    if(leftwheel_speed < 0): 
+#        input_left = -leftwheel_speed+1024
+#    else:
+#        input_left = leftwheel_speed
+    
+    
+    setMotorWheelSpeed(1, 0)
+    setMotorWheelSpeed(2, 0)
+    setMotorWheelSpeed(3, 0)
+    setMotorWheelSpeed(4, 0)
+    
     while not rospy.is_shutdown():
         r.sleep()
         
